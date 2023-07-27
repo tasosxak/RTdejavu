@@ -128,7 +128,9 @@ case class Spec(properties: List[Property]) {
   def translate(): Unit = {
     refreshMonitorTextIfDevelopment()
     openFile("TraceMonitor.scala")
-    writeln(ResourceReader.read("Monitor.txt"))
+    val inputStream = getClass.getResourceAsStream("/Monitor.txt")
+
+    writeln(Source.fromInputStream(inputStream).mkString)
     writeln()
     for (property <- properties) {
       val name = property.name
@@ -294,6 +296,22 @@ case class Spec(properties: List[Property]) {
 
     writeln(
       """object TraceMonitor {
+        |  var moni_ = new PropertyMonitor
+        |  def eval(event: String): Boolean = {
+        |    openResultFile("dejavu-results")
+        |    var input = event.split(",")
+        |    var name = input(0)
+        |    var args = new ListBuffer[Any]()
+        |    Options.BITS = 20
+        |    moni_.setTime(moni_.lineNr)  // comment out if untimed
+        |    for (i <- 1 until input.length -1) {
+        |       args += input(i)
+        |    }
+        |    moni_.lineNr += 1
+        |    var res = moni_.submit(name, args.toList)
+        |    closeResultFile()
+        |    return res;
+        |  }
         |  def main(args: Array[String]): Unit = {
         |    if (1 <= args.length && args.length <= 3) {
         |      if (args.length > 1) Options.BITS = args(1).toInt
@@ -1982,8 +2000,8 @@ case class ZinceTimeLE(ltl1: LTL, timeLimit: Int, ltl2: LTL) extends LTL {
     LTL.assign(index)(
       s"""
          |now($index1).and(
-         |  (pre($index2)
-         |   .and(deltaLessThanTimeLimit($timeLimit))
+         |  (pre(${index2})
+         |   .and(deltaLessThanTimeLimit(${timeLimit}))
          |   .and(zeroTime)
          |   .and(DeltaBDD)
          |   .and(addConst(tBDDList, uBDDList, dBDDList, cBDDList))
@@ -1992,10 +2010,10 @@ case class ZinceTimeLE(ltl1: LTL, timeLimit: Int, ltl2: LTL) extends LTL {
          |   .exist(var_c_quantvar)
          |   .replace(u_to_t_map)
          |  ).or(
-         |    pre($index2).not()
-         |    .and(pre($index))
+         |    pre(${index2}).not()
+         |    .and(pre(${index}))
          |    .and(DeltaBDD)
-         |    .and(limitMap($timeLimit))
+         |    .and(limitMap(${timeLimit}))
          |    .and(addConst(tBDDList, uBDDList, dBDDList, cBDDList))
          |    .and(gtConst(uBDDListHighToLow, lBDDListHighToLow).not())
          |    .exist(var_t_quantvar)

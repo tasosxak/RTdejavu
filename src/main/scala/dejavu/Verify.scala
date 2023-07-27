@@ -141,6 +141,7 @@ object Verify {
         println(spec)
         spec.translate()
       }
+      
       if (args.length > 1) compileAndExecute(args.tail.mkString(" "))
     }
   }

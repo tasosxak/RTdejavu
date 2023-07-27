@@ -519,12 +519,12 @@ abstract class Monitor {
     * @param args the arguments to the event.
     */
 
-  def submit(name: String, args: List[Any]): Unit = {
+  def submit(name: String, args: List[Any]): Boolean = {
     if (Options.STATISTICS) {
       statistics.upddate(name)
     }
     state.update(name, args)
-    evaluate()
+    return evaluate()
   }
 
   /**
@@ -623,7 +623,7 @@ abstract class Monitor {
     * property.
     */
 
-  def evaluate(): Unit = {
+  def evaluate(): Boolean = {
     debug(s"\ncurrentTime = $currentTime\n$state\n")
     for (formula <- formulae) {
       formula.setTime(deltaTime)
@@ -631,8 +631,10 @@ abstract class Monitor {
         errors += 1
         println(s"\n*** Property ${formula.name} violated on event number $lineNr:\n")
         println(state)
+        return false;
       }
     }
+    return true;
   }
 
   /**

@@ -23,11 +23,23 @@ java -cp $DEJAVU/dejavu.jar dejavu.Verify $1 | grep -v "Elapsed total"
 echo "Compiling synthesized monitor: ..."
 time scalac -cp .:$DEJAVU/dejavu.jar TraceMonitor.scala 2>&1 | grep -v "warning"
 
-# Run the compiled monitor on trace:
-echo ""
-echo "Verifying trace: ..."
-time scala -J-Xmx16g -cp .:$DEJAVU/dejavu.jar TraceMonitor $2 $BDDSIZE $DEBUG 2>&1\
-  | grep -v "Resizing" | grep -v "load BDD package" | grep -v "Garbage collection"
+
+if [[ $* == *--jar* ]]
+then
+    # Generate .jar monitor file:
+    echo ""
+    echo "Generate .jar file ..."
+    scalac -cp .:$DEJAVU/dejavu.jar TraceMonitor.scala 2>&1 -d TraceMonitor.jar
+    jar --update --verbose --file TraceMonitor.jar --main-class TraceMonitor
+    echo "Verifying trace: ..."
+    java -cp $DEJAVU/dejavu.jar:/usr/share/scala-2.11/lib/scala-library.jar:TraceMonitor.jar TraceMonitor $2
+else
+  # Run the compiled monitor on trace:
+  echo ""
+  echo "Verifying trace: ..."
+  time scala -J-Xmx16g -cp .:$DEJAVU/dejavu.jar TraceMonitor $2 $BDDSIZE $DEBUG 2>&1\
+    | grep -v "Resizing" | grep -v "load BDD package" | grep -v "Garbage collection"
+fi
 
 # Clean up:
 rm *.class

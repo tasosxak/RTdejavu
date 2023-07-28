@@ -1344,6 +1344,14 @@ case class Pred(name: String, values: List[ConstOrVar]) extends LTL {
   }
 }
 
+trait MathOp {
+  def getName: String = this.getClass.getSimpleName.dropRight(1)
+}
+
+case object ADDOP extends MathOp {
+    override def toString: String = "+"
+}
+
 trait RelOp {
   def getName: String = this.getClass.getSimpleName.dropRight(1)
 }

@@ -689,6 +689,21 @@ abstract class Formula(val monitor: Monitor) {
     def compare(v1: Any, v2: Any): Boolean
   }
 
+  trait MathOp {
+    def compute(v1: Any, v2: Any): Integer
+  }
+
+  /**
+    * The '+' plus operator
+    */
+
+  case object ADDOP extends MathOp {
+      def compute(v1: Any, v2: Any) : Integer = {
+        v1.asInstanceOf[String].toInt + v2.asInstanceOf[String].toInt
+      }
+      override def toString = "+"
+  }
+
   /**
     * The '<' relational operator.
     */

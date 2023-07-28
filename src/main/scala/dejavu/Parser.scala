@@ -25,6 +25,8 @@ class Parser extends JavaTokenParsers {
       "true\\b".r |
       "false\\b".r
 
+  def plus = "+" ^^ ( _ => ADDOP)
+  
   def le = "<=" ^^ (_ => LEOP)
 
   def lt = "<" ^^ (_ => LTOP)

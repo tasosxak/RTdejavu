@@ -860,6 +860,42 @@ abstract class Formula(val monitor: Monitor) {
     result
   }
 
+  def relationToConstants(varName: String, op: RelOp, consts: ListBuffer[String]): BDD = {
+    val variable = bddGenerator.varMap(varName)
+    var result: BDD = bddGenerator.False
+    for ((vName, value, bdd) <- touchedByLastEvent) {
+      
+        for ( constValue <- consts) {
+          if (op.compare(value, constValue)) {
+            result = result.or(bdd)
+            variable.inRelation(bdd)
+            debug(s"adding [$varName:$value] $op $value to '$varName $op $constValue'  BDD")
+          }
+        }
+     
+    }
+    result
+  }
+
+
+  def computationWithConstant(varName: String, op: MathOp, const: Any): ListBuffer[String] = {
+    val variable = bddGenerator.varMap(varName)
+    var result = new ListBuffer[String]()
+
+    debug(s"called:,$varName, $op, $const")
+    debug(s"${variable.bdds}")
+     for ((value, bdd) <- variable.bdds) {
+      
+          debug(s"$value")
+          result += op.compute(value, const).toString
+          
+      }
+
+    debug(s"$result")
+    return result
+  }
+
+
   /**
     * If the formula contains relations (<code>touchedByLastEvent != null</code>), this function
     * adds a newly generated binding of a variable to a value and binding. This is used for updating

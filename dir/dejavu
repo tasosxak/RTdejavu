@@ -17,7 +17,7 @@ echo $DEBUG
 DEJAVU=`dirname $0`
 
 # Parse specification and synthesize monitor:
-java -cp $DEJAVU/dejavu.jar dejavu.Verify $1 | grep -v "Elapsed total"
+#java -cp $DEJAVU/dejavu.jar dejavu.Verify $1 | grep -v "Elapsed total"
 
 # Compile synthesized monitor:
 echo "Compiling synthesized monitor: ..."

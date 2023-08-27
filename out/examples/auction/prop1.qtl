@@ -3,4 +3,4 @@
 // if a bid a2 is submitted on an item i, and in the past there was another
 // bid a1 on that item, then a2 must be bigger than a1.
 
-prop p : Forall i . Forall a1 . Forall a2 . @ P bid(i,a1) & bid(i,a2) -> a1 < a2
+prop p : Forall i . Forall a1 .  bid(i,a1)  -> a1 >= i + 1

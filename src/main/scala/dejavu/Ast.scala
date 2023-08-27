@@ -1376,6 +1376,47 @@ case object EQOP extends RelOp {
   override def toString: String = "="
 }
 
+trait MathExpression {
+
+  def translate():String; 
+}
+
+case class MathExpr(varName1: String, op: MathOp, varName2: String) extends MathExpression {
+
+  
+  def translate(): String = {
+   
+    val varName1Q = quote(varName1)
+    val varName2Q = quote(varName2)
+    return s"calculation($varName1Q,${op.getName},$varName2Q)"
+  }
+
+
+  override def toString: String = { s"$varName1 $op $varName2"} 
+}
+
+
+case class MathConst(varName: String, op: MathOp, const: Any) extends MathExpression {
+
+
+  def translate(): String = {
+
+    val varNameQ = quote(varName)
+    val constQ = quoteIfNotQuoted(const)
+ 
+    return s"computationWithConstant($varNameQ,${op.getName},$constQ)"
+  
+  }
+
+  override def toString: String = {
+    s"$varName $op $const"
+    val constant = requoteIfString(const)
+    s"$varName $op $constant"
+   
+  }
+}
+
+
 case class Rel(varName1: String, op: RelOp, varName2: String) extends LTL {
 
   override def checkForm(env: Environment): Unit = {
@@ -1442,6 +1483,41 @@ case class RelConst(varName: String, op: RelOp, const: Any) extends LTL {
   override def toString: String = {
     s"$varName $op $const"
     val constant = requoteIfString(const)
+    s"$varName $op $constant"
+  }
+}
+
+
+case class RelExpr(varName: String, op: RelOp, expr: MathExpression) extends LTL {
+
+  override def checkForm(env: Environment): Unit = {
+    verify(env.definesVar(varName))(s"variable name $varName occurs free")
+  }
+
+  override def getFreeVariables: Set[String] = Set(varName)
+
+  override def translate(): Int = {
+    super.translate()
+    val varNameQ = quote(varName)
+    // val constString = const.asInstanceOf[String]
+    // val constQ = if (constString.startsWith("\"")) const else quote(const)
+    //val constQ = quoteIfNotQuoted(expr)
+    LTL.assign(index)(s"relationToConstants($varNameQ,${op.getName}, ${expr.translate}).or(pre($index))")
+    LTL.varsInRelations ++= Set(varName)
+    index
+  }
+
+  override def substitute(subst: Substitution): LTL = {
+    val varNameRenamed = substituteVarForVar(varName, subst)
+    RelConst(varNameRenamed, op, expr)
+  }
+
+  override def substituteRuleBody(subst: Substitution): LTL =
+    substitute(subst)
+
+  override def toString: String = {
+    s"$varName $op $expr"
+    val constant = requoteIfString(expr)
     s"$varName $op $constant"
   }
 }

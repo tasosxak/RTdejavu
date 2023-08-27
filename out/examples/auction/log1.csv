@@ -1,12 +1,3 @@
-list,hat,100
-bid,hat,50
-bid,hat,110
-sell,hat
-list,painting,2000
-bid,painting,1000
-bid,painting,900
-sell,painting
-list,painting,1800
-bid,painting,1850
-sell,painting
-bid,table,500
+list,999,100
+bid,99,50
+bid,9999,110

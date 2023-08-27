@@ -39,6 +39,15 @@ class Parser extends JavaTokenParsers {
 
   def oper = le | lt | ge | gt | eq
 
+  def mathoper = plus 
+
+  def expression = name ~ mathoper ~ name ^^ {
+          case id1 ~ op ~ id2 => MathExpr(id1, op, id2)
+      } |
+      name ~ mathoper ~ const ^^ {
+        case id ~ op ~ co => MathConst(id, op, co)
+      }
+
   val name: Parser[String] = not(reserved) ~> ident
 
   def document: Parser[Document] = rep(definition) ^^ {
@@ -140,6 +149,9 @@ class Parser extends JavaTokenParsers {
       "false" ^^ {
         case _ => False
       } |
+      name ~ oper ~ expression ^^ {
+        case id ~ op ~ expr => RelExpr(id, op, expr) 
+      } |
       name ~ oper ~ name ^^ {
         case id1 ~ op ~ id2 => Rel(id1, op, id2)
       } |
@@ -203,9 +215,9 @@ class Parser extends JavaTokenParsers {
     name ^^ {
       case id => VPat(id)
     } |
-      const ^^ {
-        case v => CPat(v)
-      }
+    const ^^ {
+      case v => CPat(v)
+    }
 
   // --------------- AUXILIARY -----------------
 

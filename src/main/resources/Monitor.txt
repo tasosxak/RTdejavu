@@ -1,4 +1,3 @@
-
 /* Generic Monitoring Code common for all properties. */
 
 import net.sf.javabdd.{BDD, BDDFactory}
@@ -633,7 +632,6 @@ abstract class Monitor {
         return false;
       }
     }
-
     return true;
   }
 
@@ -687,6 +685,21 @@ abstract class Formula(val monitor: Monitor) {
 
   trait RelOp {
     def compare(v1: Any, v2: Any): Boolean
+  }
+
+  trait MathOp {
+    def compute(v1: Any, v2: Any): Integer
+  }
+
+  /**
+    * The '+' plus operator
+    */
+
+  case object ADDOP extends MathOp {
+      def compute(v1: Any, v2: Any) : Integer = {
+        v1.asInstanceOf[String].toInt + v2.asInstanceOf[String].toInt
+      }
+      override def toString = "+"
   }
 
   /**
@@ -843,6 +856,41 @@ abstract class Formula(val monitor: Monitor) {
       debug(s"adding [$varName:$value] $op $const to '$varName $op $const'  BDD")
     }
     result
+  }
+
+   def relationToConstants(varName: String, op: RelOp, consts: ListBuffer[String]): BDD = {
+    val variable = bddGenerator.varMap(varName)
+    var result: BDD = bddGenerator.False
+    for ((vName, value, bdd) <- touchedByLastEvent) {
+      
+        for ( constValue <- consts) {
+          if (op.compare(value, constValue)) {
+            result = result.or(bdd)
+            variable.inRelation(bdd)
+            debug(s"adding [$varName:$value] $op $value to '$varName $op $constValue'  BDD")
+          }
+        }
+     
+    }
+    result
+  }
+
+
+   def computationWithConstant(varName: String, op: MathOp, const: Any): ListBuffer[String] = {
+    val variable = bddGenerator.varMap(varName)
+    var result = new ListBuffer[String]()
+
+    debug(s"called:,$varName, $op, $const")
+    debug(s"${variable.bdds}")
+     for ((value, bdd) <- variable.bdds) {
+      
+          debug(s"$value")
+          result += op.compute(value, const).toString
+          
+      }
+
+    debug(s"$result")
+    return result
   }
 
   /**
